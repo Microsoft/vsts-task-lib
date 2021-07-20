@@ -327,4 +327,39 @@ describe('Mock Tests', function () {
         assert(semver.satisfies(version, '14.x'), 'Downloaded node version should be Node 14 instead of ' + version);
         done();
     })
+
+    it('get mock values of environment variables using getVariable', function (done) {
+
+        var a: ma.TaskLibAnswers = <ma.TaskLibAnswers><unknown>{
+            "getVariable": {
+                "SECRET_PASSWORD": "123",
+                "VSTS_TASKVARIABLE_USERNAME": "user_sample"
+            }
+        };
+
+        mt.setAnswers(a);
+
+        const varValFirst = mt.getVariable('SECRET_PASSWORD')
+        const varValSecond = mt.getVariable('VSTS_TASKVARIABLE_USERNAME')
+
+        assert.equal(varValFirst, '123');
+        assert.equal(varValSecond, 'user_sample');
+        done();
+    })
+
+    it('gets task variables from a MockTestRuuner execution', function (done) {
+        this.timeout(15000);
+
+        var task_path = path.join(__dirname , 'fakeTasks', 'fake_task.js')
+
+        const runner = new mtm.MockTestRunner(task_path)
+
+        process.env['SECRET_PASSWORD'] = '123'
+        process.env['VSTS_TASKVARIABLE_USERNAME'] = 'user_sample'
+
+        runner.run()
+
+        assert.strictEqual(runner.succeeded, true, 'it should succeed getting the variables');
+        done();
+    })
 });
